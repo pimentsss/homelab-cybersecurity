@@ -1,14 +1,8 @@
 # 🛡️ Cybersecurity Home Lab
 
-A virtual environment for practising network administration, Active Directory, attack and defence.
-It simulates a small company network: a firewall, a domain controller, a Linux server, and an attacker machine on a separate network.
+> **Status:** 🚧 In progress
 
-## 🎯 Goals
-- Set up a firewall that splits the lab into separate networks (pfSense)
-- Build an Active Directory domain with users, groups and OUs
-- Join a Linux server to the domain
-- Test the network from an isolated attacker machine (Kali)
-- Lay the groundwork for the next projects: a SIEM (Wazuh) and detecting attacks on Active Directory
+A virtualised small-business network that I am designing and building myself to get hands-on experience with network security, Active Directory administration, and offensive and defensive security.
 
 ## 🗺️ Architecture
 
@@ -30,52 +24,32 @@ flowchart TB
     PF -- "10.0.20.1" --- ATK
 ```
 
-## 📋 IP addressing plan
-
-| Machine | OS | Network | IP | Role |
+| Host | OS | Network | IP | Role |
 |---|---|---|---|---|
 | pfSense | pfSense CE | WAN / LAN / ATTACK | DHCP / 10.0.10.1 / 10.0.20.1 | Firewall, router, DHCP |
-| DC01 | Windows Server 2022 | LAB-LAN | 10.0.10.10 | Domain controller, DNS |
+| DC01 | Windows Server 2022 | LAB-LAN | 10.0.10.10 | Domain controller, DNS (`lab.internal`) |
 | UBU01 | Ubuntu Server 24.04 | LAB-LAN | 10.0.10.20 | Domain-joined Linux server |
 | Kali | Kali Linux | LAB-ATTACK | DHCP | Attacker machine |
 
-**Domain:** `lab.internal` (NetBIOS name `LAB`). It uses `.internal` because that top-level domain is reserved for private networks. `.local` would clash with mDNS on Linux.
+## 🧩 Design decisions
+- **Separate attacker network.** Kali sits on its own network behind the firewall, so it can only reach what the firewall rules allow, much like an attacker outside a company's internal network.
+- **Firewall management interface protected.** Traffic from the attacker network to the firewall itself is blocked, so the management interface can't be reached from there.
+- **`.internal` domain.** `.internal` is the top-level domain reserved for private networks, which avoids the mDNS clashes that `.local` causes on Linux clients.
+- **Scripted AD setup.** OUs, groups and users are created with an idempotent PowerShell script ([`scripts/create-users.ps1`](scripts/create-users.ps1)), so the domain can be rebuilt the same way every time.
 
-## 💻 Requirements
-- A CPU with virtualisation enabled in the BIOS (VT-x / AMD-V)
-- **16 GB of RAM** (the 4 VMs use about 11 GB)
-- About 150 GB of free disk space
-- [VirtualBox](https://www.virtualbox.org/) (VMware Workstation, which is now free, also works)
+## 📈 Progress
 
-| VM | vCPU | RAM | Disk |
-|---|---|---|---|
-| pfSense | 1 | 1 GB | 16 GB |
-| DC01 | 2 | 4 GB | 60 GB |
-| UBU01 | 1 | 2 GB | 25 GB |
-| Kali | 2 | 4 GB | 80 GB |
-
-## 🛠️ Build guide
-1. [pfSense: firewall and network segmentation](docs/01-pfsense.md)
-2. [Windows Server: Active Directory](docs/02-windows-ad.md)
-3. [Ubuntu Server: joining the domain](docs/03-ubuntu.md)
-4. [Kali: validation and first tests](docs/04-kali-validation.md)
-
-> 💡 Take a **snapshot** of each VM at the end of every step. If something breaks, you can roll back in seconds.
-
-## ✅ Roadmap
-- [ ] Network and firewall with separate LAN and attacker networks
-- [ ] AD domain with users and groups
-- [ ] Ubuntu joined to the domain
-- [ ] Validation tests from Kali
-- [ ] Windows 11 client joined to the domain
-- [ ] Wazuh SIEM on UBU01, with an agent on DC01
-- [ ] Simulate AD attacks (Kerberoasting, password spraying) and detect them in Wazuh
+| Phase | Description | Status |
+|---|---|---|
+| 1 | Network and firewall segmentation (pfSense) | 🔲 Planned |
+| 2 | Active Directory domain: OUs, groups, users | 🔲 Planned |
+| 3 | Ubuntu server joined to the domain (SSSD / Kerberos) | 🔲 Planned |
+| 4 | Validation and reconnaissance from the attacker network | 🔲 Planned |
+| 5 | Wazuh SIEM with agents on DC01 and UBU01 | 🔲 Planned |
+| 6 | Simulate AD attacks (Kerberoasting, password spraying) and detect them in Wazuh | 🔲 Planned |
 
 ## 🧠 Lessons learned
-<!-- Fill this in as you go. It is the section recruiters read most. -->
-- **Problem:** …
-  **Cause:** …
-  **Fix:** …
+*Updated as each phase is completed.*
 
 ## 📸 Screenshots
-<!-- Save images in screenshots/ and link them here, e.g. ![Firewall rules](screenshots/pfsense-rules.png) -->
+*Added as each phase is completed.*
